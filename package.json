@@ -1,0 +1,52 @@
+{
+  "name": "xstate-machine",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "main": "dist/my-element.es.js",
+  "exports": {
+    ".": "./dist/my-element.es.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "analyze": "cem analyze --litelement",
+    "build": "vite build",
+    "dev": "vite",
+    "lint": "eslint --ext .js,.html . --ignore-path .gitignore && prettier \"**/*.js\" --check --ignore-path .gitignore",
+    "lint-staged": "lint-staged",
+    "format": "eslint --ext .js,.html . --fix --ignore-path .gitignore && prettier \"**/*.js\" --write --ignore-path .gitignore",
+    "prepare": "husky install",
+    "start": "web-dev-server"
+  },
+  "dependencies": {
+    "lit": "^2.3.1"
+  },
+  "devDependencies": {
+    "@custom-elements-manifest/analyzer": "^0.6.4",
+    "@open-wc/eslint-config": "^8.0.2",
+    "eslint": "^8.24.0",
+    "eslint-config-prettier": "^8.3.0",
+    "husky": "^8.0.1",
+    "lint-staged": "^13.0.3",
+    "prettier": "^2.4.1",
+    "vite": "^3.1.0"
+  },
+  "customElements": "custom-elements.json",
+  "eslintConfig": {
+    "extends": [
+      "@open-wc",
+      "prettier"
+    ]
+  },
+  "prettier": {
+    "singleQuote": true,
+    "arrowParens": "avoid"
+  },
+  "lint-staged": {
+    "*.js": "eslint --cache --fix",
+    "*.{js,html}": "eslint --cache --fix",
+    "*": "prettier --write --ignore-unknown"
+  }
+}
