@@ -22,36 +22,6 @@ export class MyElement extends LitElement {
     };
   }
 
-  constructor() {
-    super();
-    this.docsHint = 'Click on the Vite and Lit logos to learn more';
-    this.count = 0;
-  }
-
-  render() {
-    return html`
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src="/vite.svg" class="logo" alt="Vite logo" />
-        </a>
-        <a href="https://lit.dev" target="_blank">
-          <img src=${litLogo} class="logo lit" alt="Lit logo" />
-        </a>
-      </div>
-      <slot></slot>
-      <div class="card">
-        <button @click=${this._onClick} part="button">
-          count is ${this.count}
-        </button>
-      </div>
-      <p class="read-the-docs">${this.docsHint}</p>
-    `;
-  }
-
-  _onClick() {
-    this.count += 1;
-  }
-
   static get styles() {
     return css`
       :host {
@@ -122,6 +92,36 @@ export class MyElement extends LitElement {
           background-color: #f9f9f9;
         }
       }
+    `;
+  }
+
+  constructor() {
+    super();
+    this.docsHint = 'Click on the Vite and Lit logos to learn more';
+    this.count = 0;
+  }
+
+  _onClick() {
+    this.count += 1;
+  }
+
+  render() {
+    return html`
+      <div>
+        <a href="https://vitejs.dev" target="_blank">
+          <img src="/vite.svg" class="logo" alt="Vite logo" />
+        </a>
+        <a href="https://lit.dev" target="_blank">
+          <img src=${litLogo} class="logo lit" alt="Lit logo" />
+        </a>
+      </div>
+      <slot></slot>
+      <div class="card">
+        <button @click=${this._onClick} part="button">
+          count is ${this.count}
+        </button>
+      </div>
+      <p class="read-the-docs">${this.docsHint}</p>
     `;
   }
 }
