@@ -1,5 +1,23 @@
-import { LitElement, css, html } from 'lit';
+import { css, html, LitElement } from 'lit';
+import { assign, createMachine, interpret } from 'xstate';
 import litLogo from './assets/lit.svg';
+
+const onClick = context => context.count + 1;
+
+const counterMachine = createMachine({
+  id: 'counter',
+  context: {
+    count: 0,
+  },
+  initial: 'active',
+  states: {
+    active: { on: { ADD: { actions: assign({ count: onClick }) } } },
+  },
+});
+
+const counterService = interpret(counterMachine)
+  .onTransition(state => console.log(state.context))
+  .start();
 
 /**
  * An example element.
@@ -102,7 +120,10 @@ export class MyElement extends LitElement {
   }
 
   _onClick() {
-    this.count += 1;
+    const {
+      context: { count },
+    } = counterService.send('ADD');
+    this.count = count;
   }
 
   render() {
