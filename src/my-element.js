@@ -2,7 +2,8 @@ import { css, html, LitElement } from 'lit';
 import { assign, createMachine, interpret } from 'xstate';
 import litLogo from './assets/lit.svg';
 
-const onClick = context => context.count + 1;
+const onClick = negative => context =>
+  negative ? context.count - 1 : context.count + 1;
 
 const counterMachine = createMachine({
   id: 'counter',
@@ -11,7 +12,12 @@ const counterMachine = createMachine({
   },
   initial: 'active',
   states: {
-    active: { on: { ADD: { actions: assign({ count: onClick }) } } },
+    active: {
+      on: {
+        INC: { actions: assign({ count: onClick(false) }) },
+        DEC: { actions: assign({ count: onClick(true) }) },
+      },
+    },
   },
 });
 
@@ -119,10 +125,14 @@ export class MyElement extends LitElement {
     this.count = 0;
   }
 
-  _onClick() {
+  _onClick({
+    target: {
+      dataset: { service },
+    },
+  }) {
     const {
       context: { count },
-    } = counterService.send('ADD');
+    } = counterService.send(service);
     this.count = count;
   }
 
@@ -138,10 +148,14 @@ export class MyElement extends LitElement {
       </div>
       <slot></slot>
       <div class="card">
-        <button @click=${this._onClick} part="button">
-          count is ${this.count}
+        <button @click=${this._onClick} part="button" data-service="INC">
+          Increment
+        </button>
+        <button @click=${this._onClick} part="button" data-service="DEC">
+          Decrement
         </button>
       </div>
+      <h2>count is ${this.count}</h2>
       <p class="read-the-docs">${this.docsHint}</p>
     `;
   }
