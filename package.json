@@ -39,7 +39,10 @@
     "extends": [
       "@open-wc",
       "prettier"
-    ]
+    ],
+    "rules": {
+      "class-methods-use-this": "off"
+    }
   },
   "prettier": {
     "singleQuote": true,
