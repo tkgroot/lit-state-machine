@@ -5,20 +5,53 @@ import litLogo from './assets/lit.svg';
 const onClick = negative => context =>
   negative ? context.count - 1 : context.count + 1;
 
+const countGuard = (context, event) => {
+  console.log(context, event);
+  return context.count >= 0;
+};
+
+const isMin = (context, _) => context.count >= 1;
+const isMax = (context, _) => context.count <= 9;
+
 const counterMachine = createMachine({
   id: 'counter',
   context: {
     count: 0,
   },
-  initial: 'active',
+  initial: 'disableDec',
   states: {
+    disableDec: {
+      on: {
+        INC: { actions: assign({ count: onClick(false) }), target: 'active' },
+      },
+    },
     active: {
       on: {
-        INC: { actions: assign({ count: onClick(false) }) },
-        DEC: { actions: assign({ count: onClick(true) }) },
+        INC: [
+          {
+            actions: assign({ count: onClick(false) }),
+            cond: isMax,
+            target: 'active',
+          },
+          { target: 'disableInc' },
+        ],
+        DEC: [
+          {
+            actions: assign({ count: onClick(true) }),
+            cond: isMin,
+            target: 'active',
+          },
+          { target: 'disableDec' },
+        ],
+      },
+    },
+    disableInc: {
+      on: {
+        DEC: { actions: assign({ count: onClick(true) }), target: 'active' },
       },
     },
   },
+  guards: { countGuard },
 });
 
 const counterService = interpret(counterMachine)
@@ -148,10 +181,20 @@ export class MyElement extends LitElement {
       </div>
       <slot></slot>
       <div class="card">
-        <button @click=${this._onClick} part="button" data-service="INC">
+        <button
+          @click=${this._onClick}
+          part="button"
+          data-service="INC"
+          ?disabled="${!isMax({ count: this.count })}"
+        >
           Increment
         </button>
-        <button @click=${this._onClick} part="button" data-service="DEC">
+        <button
+          @click=${this._onClick}
+          part="button"
+          data-service="DEC"
+          ?disabled="${!isMin({ count: this.count })}"
+        >
           Decrement
         </button>
       </div>
