@@ -7,48 +7,54 @@ const onClick = negative => context =>
 
 const countGuard = (context, event) => {
   console.log(context, event);
-  return context.count >= 0;
+  return context.count >= 0 && context.count <= 9;
 };
 
-const isMin = (context, _) => context.count >= 1;
-const isMax = (context, _) => context.count <= 9;
+const isNotMin = (context, _) => context.count >= 1;
+const isNotMax = (context, _) => context.count <= 9;
+const notZero = (context, _) => context.count !== 0;
+const equal6 = (context, _) => context.count === 6;
 
 const counterMachine = createMachine({
   id: 'counter',
   context: {
     count: 0,
   },
-  initial: 'disableDec',
+  initial: 'active',
   states: {
-    disableDec: {
-      on: {
-        INC: { actions: assign({ count: onClick(false) }), target: 'active' },
-      },
-    },
     active: {
       on: {
-        INC: [
+        Increment: [
           {
             actions: assign({ count: onClick(false) }),
-            cond: isMax,
+            cond: isNotMax,
             target: 'active',
           },
-          { target: 'disableInc' },
         ],
-        DEC: [
+        Decrement: [
           {
             actions: assign({ count: onClick(true) }),
-            cond: isMin,
+            cond: isNotMin,
             target: 'active',
           },
-          { target: 'disableDec' },
+        ],
+        Divide: [
+          {
+            actions: assign({ count: context => context.count / 2 }),
+            cond: notZero,
+            target: 'active',
+          },
+        ],
+        '': [
+          {
+            cond: equal6,
+            target: 'win',
+          },
         ],
       },
     },
-    disableInc: {
-      on: {
-        DEC: { actions: assign({ count: onClick(true) }), target: 'active' },
-      },
+    win: {
+      type: 'final',
     },
   },
   guards: { countGuard },
@@ -155,18 +161,13 @@ export class MyElement extends LitElement {
   constructor() {
     super();
     this.docsHint = 'Click on the Vite and Lit logos to learn more';
-    this.count = 0;
+    this.currentState = counterMachine.initialState;
+    this.count = this.currentState.context.count;
   }
 
-  _onClick({
-    target: {
-      dataset: { service },
-    },
-  }) {
-    const {
-      context: { count },
-    } = counterService.send(service);
-    this.count = count;
+  _onClick({ target: { action } }) {
+    this.currentState = counterService.send(action);
+    this.count = this.currentState.context.count;
   }
 
   render() {
@@ -181,22 +182,18 @@ export class MyElement extends LitElement {
       </div>
       <slot></slot>
       <div class="card">
-        <button
-          @click=${this._onClick}
-          part="button"
-          data-service="INC"
-          ?disabled="${!isMax({ count: this.count })}"
-        >
-          Increment
-        </button>
-        <button
-          @click=${this._onClick}
-          part="button"
-          data-service="DEC"
-          ?disabled="${!isMin({ count: this.count })}"
-        >
-          Decrement
-        </button>
+        ${counterMachine.events
+          .filter(event => event !== '')
+          .map(
+            action => html` <button
+              @click=${this._onClick}
+              .action=${action}
+              part="button"
+              ?disabled="${!this.currentState.can(action)}"
+            >
+              ${action}
+            </button>`
+          )}
       </div>
       <h2>count is ${this.count}</h2>
       <p class="read-the-docs">${this.docsHint}</p>
