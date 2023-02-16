@@ -1,68 +1,9 @@
 import { css, html, LitElement } from 'lit';
-import { assign, createMachine, interpret } from 'xstate';
+import { interpret } from 'xstate';
 import litLogo from './assets/lit.svg';
+import { counterMachine } from './counter-machine.js';
 
-const onClick = negative => context =>
-  negative ? context.count - 1 : context.count + 1;
-
-const countGuard = (context, event) => {
-  console.log(context, event);
-  return context.count >= 0 && context.count <= 9;
-};
-
-const isNotMin = (context, _) => context.count >= 1;
-const isNotMax = (context, _) => context.count <= 9;
-const notZero = (context, _) => context.count !== 0;
-const equal6 = (context, _) => context.count === 6;
-
-const counterMachine = createMachine({
-  id: 'counter',
-  context: {
-    count: 0,
-  },
-  initial: 'active',
-  states: {
-    active: {
-      on: {
-        Increment: [
-          {
-            actions: assign({ count: onClick(false) }),
-            cond: isNotMax,
-            target: 'active',
-          },
-        ],
-        Decrement: [
-          {
-            actions: assign({ count: onClick(true) }),
-            cond: isNotMin,
-            target: 'active',
-          },
-        ],
-        Divide: [
-          {
-            actions: assign({ count: context => context.count / 2 }),
-            cond: notZero,
-            target: 'active',
-          },
-        ],
-        '': [
-          {
-            cond: equal6,
-            target: 'win',
-          },
-        ],
-      },
-    },
-    win: {
-      type: 'final',
-    },
-  },
-  guards: { countGuard },
-});
-
-const counterService = interpret(counterMachine)
-  .onTransition(state => console.log(state.context))
-  .start();
+const counterService = interpret(counterMachine).start();
 
 /**
  * An example element.
@@ -196,6 +137,11 @@ export class MyElement extends LitElement {
           )}
       </div>
       <h2>count is ${this.count}</h2>
+      <p>
+        ${this.currentState.toStrings()[0] === 'win'
+          ? 'You won!'
+          : 'Increment only when counter < 100. Try to get the counter to 49'}
+      </p>
       <p class="read-the-docs">${this.docsHint}</p>
     `;
   }
